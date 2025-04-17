@@ -23,6 +23,7 @@ func login(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		t, _ := template.ParseFiles("index.html")
 		t.Execute(res, nil)
+		return
 	}
 
 	inputID := req.FormValue("id")
@@ -36,7 +37,7 @@ func login(res http.ResponseWriter, req *http.Request) {
 		}
 		http.SetCookie(res, cookie)
 
-		http.Redirect(res, req, "/greeting", http.StatusMovedPermanently)
+		http.Redirect(res, req, "/greeting", http.StatusSeeOther)
 	} else {
 		http.Error(res, "Invalid credentials", http.StatusUnauthorized)
 	}
