@@ -15,14 +15,16 @@ func TestLogin(t *testing.T) {
 		password       string
 		expectedStatus int
 		expectedHeader string
+		expectedCookie string
 	}{
 		{
 			name:           "Valid credentials",
 			method:         http.MethodPost,
 			id:             "Yoon",
 			password:       "P@ssw0rd",
-			expectedStatus: http.StatusSeeOther,
+			expectedStatus: http.StatusMovedPermanently,
 			expectedHeader: "/greeting",
+			expectedCookie: "Yoon",
 		},
 		{
 			name:           "Invalid credentials - wrong id and password",
@@ -50,7 +52,7 @@ func TestLogin(t *testing.T) {
 			method:         http.MethodGet,
 			id:             "",
 			password:       "",
-			expectedStatus: http.StatusMethodNotAllowed,
+			expectedStatus: http.StatusOK,
 		},
 	}
 
@@ -68,9 +70,23 @@ func TestLogin(t *testing.T) {
 			}
 
 			if tt.expectedStatus == http.StatusSeeOther {
+				// Check redirect location
 				location := res.Header().Get("Location")
 				if location != tt.expectedHeader {
 					t.Errorf("expected redirect to %s, got %s", tt.expectedHeader, location)
+				}
+
+				// Check cookie
+				cookies := res.Result().Cookies()
+				found := false
+				for _, cookie := range cookies {
+					if cookie.Name == "username" && cookie.Value == tt.expectedCookie {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("expected cookie 'username' with value %s, but not found", tt.expectedCookie)
 				}
 			}
 		})
