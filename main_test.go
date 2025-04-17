@@ -22,7 +22,7 @@ func TestLogin(t *testing.T) {
 			method:         http.MethodPost,
 			id:             "Yoon",
 			password:       "P@ssw0rd",
-			expectedStatus: http.StatusMovedPermanently,
+			expectedStatus: http.StatusSeeOther,
 			expectedHeader: "/greeting",
 			expectedCookie: "Yoon",
 		},
