@@ -7,18 +7,14 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		t, _ := template.ParseFiles("index.html")
-		t.Execute(w, nil)
-	})
+	// 라우터 설정
+	router := SetupRouter()
 
-	http.HandleFunc("/login", login)
-	http.HandleFunc("/greeting", greeting)
-	http.ListenAndServe(":8080", nil)
+	// 서버 시작
 	fmt.Println("Server started at http://localhost:8080")
+	http.ListenAndServe(":8080", router)
 }
 
-// loginHandler는 로그인 폼을 처리하는 핸들러입니다.
 func login(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		t, _ := template.ParseFiles("index.html")
@@ -30,12 +26,20 @@ func login(res http.ResponseWriter, req *http.Request) {
 	inputPassword := req.FormValue("password")
 
 	if inputID == "Yoon" && inputPassword == "P@ssw0rd" {
-		cookie := &http.Cookie{
-			Name:  "username",
-			Value: inputID,
+		// 세션 ID 생성
+		sessionID := GenerateSessionID()
+
+		// 세션 저장
+		Mutex.Lock()
+		SessionStore[sessionID] = inputID
+		Mutex.Unlock()
+
+		// 쿠키에 세션 ID 저장
+		http.SetCookie(res, &http.Cookie{
+			Name:  "session_id",
+			Value: sessionID,
 			Path:  "/",
-		}
-		http.SetCookie(res, cookie)
+		})
 
 		http.Redirect(res, req, "/greeting", http.StatusSeeOther)
 	} else {
@@ -44,17 +48,15 @@ func login(res http.ResponseWriter, req *http.Request) {
 }
 
 func greeting(res http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPost {
-		cookie, err := req.Cookie("username")
-		var name string
-		if err != nil {
-			http.Redirect(res, req, "/", http.StatusNetworkAuthenticationRequired)
-			return
-		} else {
-			name = cookie.Value
-		}
+	// 쿠키에서 세션 ID 가져오기
+	cookie, _ := req.Cookie("session_id")
+	sessionID := cookie.Value
 
-		t, _ := template.ParseFiles("greeting.html")
-		t.Execute(res, map[string]string{"Name": name})
-	}
+	// 세션 ID로 사용자 이름 확인
+	Mutex.Lock()
+	username := SessionStore[sessionID]
+	Mutex.Unlock()
+
+	t, _ := template.ParseFiles("greeting.html")
+	t.Execute(res, map[string]string{"Name": username})
 }
