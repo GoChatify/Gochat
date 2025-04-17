@@ -1,13 +1,13 @@
 package main
 
 import (
-	"GoChat/config"
+	"GoChat/Config"
 	"fmt"
 	"net/http"
 )
 
 func main() {
-	config.RegisterRoutes()
+	Config.RegisterRoutes()
 	fmt.Println("Server started at http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }
