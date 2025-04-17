@@ -1,6 +1,7 @@
 package main
 
 import (
+	"GoChat/Controller"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -63,7 +64,7 @@ func TestLogin(t *testing.T) {
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			res := httptest.NewRecorder()
 
-			login(res, req)
+			Controller.Login(res, req)
 
 			if res.Code != tt.expectedStatus {
 				t.Errorf("expected status %d, got %d", tt.expectedStatus, res.Code)
