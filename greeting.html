@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        input { padding: 10px; font-size: 16px; }
+        button { padding: 10px 20px; font-size: 16px; }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js?v=1"></script>
+</head>
+<body>
+    <h1>Hello, {{.Name}}!</h1>
+    <a href="/">Go back</a>
+    <button id="gettype">Get Type</button>
+</body>
+<script>
+    // ajax request using jquery
+    $(document).ready(function() {
+        $("#gettype").click(function() {
+            $.ajax({
+                url: "/api/getType",
+                type: "POST",
+                data: JSON.stringify({ name: "{{.Name}}" }),
+                success: function(data) {
+                    alert(data.type + " {{.Name}}" );
+                },
+                error: function() {
+                    alert("Error retrieving type.");
+                }
+            });
+        });
+    });
+
+</script>
+</html>
