@@ -1,49 +1,59 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 )
 
 func main() {
-	formTemplate := getTemplates("form.html")
-	greetingTemplate := getTemplates("greeting.html")
-
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			name := r.FormValue("name")
-			greetingTemplate.Execute(w, map[string]string{"Name": name})
-		} else {
-			formTemplate.Execute(w, nil)
-		}
+		t, _ := template.ParseFiles("index.html")
+		t.Execute(w, nil)
 	})
 
-	http.HandleFunc("/api/getType", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-
-		response := map[string]string{"type": "greeting"}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
-	})
-
+	http.HandleFunc("/login", login)
+	http.HandleFunc("/greeting", greeting)
 	http.ListenAndServe(":8080", nil)
 	fmt.Println("Server started at http://localhost:8080")
 }
 
-func getTemplates(fileName string) *template.Template {
-	if fileName == "" {
-		panic("File name cannot be empty")
+// loginHandler는 로그인 폼을 처리하는 핸들러입니다.
+func login(res http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		t, _ := template.ParseFiles("index.html")
+		t.Execute(res, nil)
 	}
-	if fileName == "form.html" {
-		return template.Must(template.ParseFiles("form.html"))
+
+	inputID := req.FormValue("id")
+	inputPassword := req.FormValue("password")
+
+	if inputID == "Yoon" && inputPassword == "P@ssw0rd" {
+		cookie := &http.Cookie{
+			Name:  "username",
+			Value: inputID,
+			Path:  "/",
+		}
+		http.SetCookie(res, cookie)
+
+		http.Redirect(res, req, "/greeting", http.StatusMovedPermanently)
+	} else {
+		http.Error(res, "Invalid credentials", http.StatusUnauthorized)
 	}
-	if fileName == "greeting.html" {
-		return template.Must(template.ParseFiles("greeting.html"))
+}
+
+func greeting(res http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		cookie, err := req.Cookie("username")
+		var name string
+		if err != nil {
+			http.Redirect(res, req, "/", http.StatusNetworkAuthenticationRequired)
+			return
+		} else {
+			name = cookie.Value
+		}
+
+		t, _ := template.ParseFiles("greeting.html")
+		t.Execute(res, map[string]string{"Name": name})
 	}
-	panic("Invalid file name")
 }
