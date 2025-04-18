@@ -6,13 +6,13 @@ import (
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("templates/index.html")
+	t, _ := template.ParseFiles("Templates/index.html")
 	t.Execute(w, nil)
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		t, _ := template.ParseFiles("templates/index.html")
+		t, _ := template.ParseFiles("Templates/index.html")
 		t.Execute(w, nil)
 		return
 	}
