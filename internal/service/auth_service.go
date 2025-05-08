@@ -18,7 +18,7 @@ func (s *AuthService) GenerateJWT(email, password string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": email,
-		"exp":   time.Now().Add(time.Hour * 72).Unix(),
+		"exp":   time.Now().Add(time.Hour * 5).Unix(),
 	})
 
 	return token.SignedString([]byte(s.SecretKey))
